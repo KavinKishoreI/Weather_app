@@ -1,0 +1,50 @@
+.root {
+    -fx-font-family: "Segoe UI", "San Francisco", "Roboto", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: #fafafa;
+}
+
+.app-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+.subtitle {
+    -fx-text-fill: #555;
+}
+
+.top-bar {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #f2f2f2);
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 0 0 1 0;
+}
+
+.side-panel {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 0 1 0 0;
+}
+
+.section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333;
+}
+
+.welcome {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.table-view {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.button {
+    -fx-background-radius: 6;
+}
+
+.chart-plot-background {
+    -fx-background-color: #ffffff;
+}

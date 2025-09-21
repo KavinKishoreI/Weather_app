@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.example.ui.LoginController"
+      spacing="16" alignment="CENTER" prefWidth="900" prefHeight="600" stylesheets="@../css/styles.css">
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
+
+    <Label text="Weather App Demo" styleClass="app-title"/>
+    <Label text="Please sign in or register" styleClass="subtitle"/>
+
+    <GridPane hgap="12" vgap="12">
+        <columnConstraints>
+            <ColumnConstraints halignment="RIGHT" minWidth="120"/>
+            <ColumnConstraints hgrow="ALWAYS"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="30"/>
+            <RowConstraints minHeight="30"/>
+            <RowConstraints minHeight="30"/>
+        </rowConstraints>
+
+        <Label text="Email:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="emailField" promptText="you@example.com" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Password:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <PasswordField fx:id="passwordField" promptText="••••••••" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <HBox spacing="12" alignment="CENTER_RIGHT" GridPane.rowIndex="2" GridPane.columnIndex="1">
+            <Button fx:id="registerButton" text="Register" onAction="#onRegister"/>
+            <Button fx:id="loginButton" text="Login" defaultButton="true" onAction="#onLogin"/>
+        </HBox>
+    </GridPane>
+
+    <Label fx:id="statusLabel" textFill="#d32f2f"/>
+
+    <Region VBox.vgrow="ALWAYS"/>
+    <Label text="Built with JavaFX" opacity="0.7"/>
+</VBox>

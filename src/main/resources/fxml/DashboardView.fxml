@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.ui.DashboardController" prefWidth="1200" prefHeight="800">
+    <top>
+        <HBox spacing="16" alignment="CENTER_LEFT" BorderPane.alignment="CENTER" styleClass="top-bar">
+            <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
+            <Label fx:id="welcomeLabel" text="Welcome!" styleClass="welcome"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="Units:"/>
+            <ChoiceBox fx:id="unitsChoice"/>
+        </HBox>
+    </top>
+
+    <left>
+        <VBox spacing="12" prefWidth="360" BorderPane.alignment="TOP_LEFT" styleClass="side-panel">
+            <padding><Insets top="12" right="12" bottom="12" left="12"/></padding>
+            <Label text="Saved Locations" styleClass="section-title"/>
+            <TableView fx:id="locationsTable" prefHeight="400">
+                <columns>
+                    <TableColumn fx:id="colName" text="Name" prefWidth="170"/>
+                    <TableColumn fx:id="colLat" text="Latitude" prefWidth="90"/>
+                    <TableColumn fx:id="colLon" text="Longitude" prefWidth="90"/>
+                </columns>
+            </TableView>
+
+            <Separator/>
+
+            <Label text="Add Location" styleClass="section-title"/>
+            <GridPane hgap="8" vgap="8">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="90"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+                <Label text="Name:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="nameField" promptText="e.g., London, UK" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="Latitude:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="latField" promptText="51.5072" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <Label text="Longitude:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="lonField" promptText="-0.1276" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+            </GridPane>
+
+            <HBox spacing="8" alignment="CENTER_RIGHT">
+                <Button fx:id="removeButton" text="Remove Selected"/>
+                <Button fx:id="addButton" text="Add"/>
+            </HBox>
+            <Button fx:id="refreshButton" text="Refresh Chart"/>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox spacing="8" BorderPane.alignment="CENTER">
+            <padding><Insets top="12" right="12" bottom="12" left="12"/></padding>
+            <Label text="Hourly Temperature" styleClass="section-title"/>
+            <LineChart fx:id="temperatureChart">
+                <xAxis>
+                    <CategoryAxis fx:id="timeAxis" label="Time"/>
+                </xAxis>
+                <yAxis>
+                    <NumberAxis fx:id="valueAxis" label="Temperature"/>
+                </yAxis>
+            </LineChart>
+        </VBox>
+    </center>
+</BorderPane>
