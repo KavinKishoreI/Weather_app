@@ -12,6 +12,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
+import javafx.application.Platform;
 import org.example.DatabaseService;
 import org.example.SavedLocation;
 import org.example.User;
@@ -71,7 +72,10 @@ public class DashboardController {
         // Buttons
         addButton.setOnAction(e -> addLocation());
         removeButton.setOnAction(e -> removeSelected());
-        refreshButton.setOnAction(e -> refreshChart());
+        refreshButton.setOnAction(e -> {
+            System.out.println("=== REFRESH BUTTON CLICKED ===");
+            refreshChart();
+        });
 
         // Enter key adds location
         lonField.setOnKeyPressed(e -> {
@@ -79,9 +83,30 @@ public class DashboardController {
         });
 
         // Select row updates chart
-        locationsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> refreshChart());
+        locationsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
+            System.out.println("=== TABLE SELECTION CHANGED ===");
+            System.out.println("From: " + (oldSel != null ? oldSel.getName() : "null"));
+            System.out.println("To: " + (newSel != null ? newSel.getName() : "null"));
+            refreshChart();
+        });
 
         configureChart();
+        
+        // Test chart with simple data
+        testChart();
+    }
+    
+    private void testChart() {
+        System.out.println("=== TESTING CHART ===");
+        XYChart.Series<String, Number> testSeries = new XYChart.Series<>();
+        testSeries.setName("Test Data");
+        testSeries.getData().add(new XYChart.Data<>("00:00", 20));
+        testSeries.getData().add(new XYChart.Data<>("06:00", 15));
+        testSeries.getData().add(new XYChart.Data<>("12:00", 25));
+        testSeries.getData().add(new XYChart.Data<>("18:00", 22));
+        
+        temperatureChart.getData().add(testSeries);
+        System.out.println("Test data added to chart");
     }
 
     public void setUser(User user) {
@@ -118,6 +143,8 @@ public class DashboardController {
             // Select first location if available
             if (!locations.isEmpty()) {
                 locationsTable.getSelectionModel().selectFirst();
+                // Force chart refresh after loading data
+                refreshChart();
             }
             
         } catch (Exception e) {
@@ -196,11 +223,44 @@ public class DashboardController {
     }
 
     private void refreshChart() {
+        System.out.println("=== REFRESH CHART CALLED ===");
         updateValueAxisLabel();
         LocationRow sel = locationsTable.getSelectionModel().getSelectedItem();
+        
+        // Clear chart data first
         temperatureChart.getData().clear();
-        if (sel == null) return;
-
+        
+        if (sel == null) {
+            System.out.println("No location selected, chart cleared");
+            return;
+        }
+        
+        System.out.println("Refreshing chart for location: " + sel.getName() + " (" + sel.getLatitude() + ", " + sel.getLongitude() + ")");
+        
+        // Force chart to update by running on JavaFX thread
+        Platform.runLater(() -> {
+            System.out.println("=== PLATFORM.RUNLATER EXECUTING ===");
+            updateChartData(sel);
+        });
+    }
+    
+    private void forceChartRefresh() {
+        // Completely recreate the chart axes to force refresh
+        timeAxis.setTickLabelRotation(0);
+        valueAxis.setTickLabelRotation(0);
+        temperatureChart.setAnimated(false);
+        temperatureChart.setAnimated(true);
+    }
+    
+    private void updateChartData(LocationRow sel) {
+        System.out.println("=== UPDATE CHART DATA CALLED ===");
+        // Ensure chart is properly cleared and ready for new data
+        temperatureChart.getData().clear();
+        
+        // Force a complete chart refresh
+        temperatureChart.setAnimated(false);
+        temperatureChart.layout();
+        
         try {
             // Get real weather data
             boolean metric = unitsChoice.getSelectionModel().getSelectedIndex() == 0;
@@ -253,6 +313,20 @@ public class DashboardController {
             }
             
             temperatureChart.getData().add(series);
+            System.out.println("Added " + series.getData().size() + " data points to chart");
+            System.out.println("Chart data size after adding: " + temperatureChart.getData().size());
+            
+            // Force chart to refresh and redraw with multiple approaches
+            temperatureChart.setAnimated(false);
+            temperatureChart.layout();
+            
+            // Force a complete scene refresh
+            Platform.runLater(() -> {
+                temperatureChart.requestLayout();
+                temperatureChart.layout();
+                forceChartRefresh();
+                System.out.println("=== CHART LAYOUT COMPLETED ===");
+            });
             
             // Save user preference
             if (currentUser != null) {
@@ -298,6 +372,19 @@ public class DashboardController {
         }
 
         temperatureChart.getData().add(series);
+        System.out.println("Added " + series.getData().size() + " demo data points to chart");
+        
+        // Force chart to refresh and redraw with multiple approaches
+        temperatureChart.setAnimated(false);
+        temperatureChart.layout();
+        
+        // Force a complete scene refresh
+        Platform.runLater(() -> {
+            temperatureChart.requestLayout();
+            temperatureChart.layout();
+            forceChartRefresh();
+            System.out.println("=== DEMO CHART LAYOUT COMPLETED ===");
+        });
     }
 
 
