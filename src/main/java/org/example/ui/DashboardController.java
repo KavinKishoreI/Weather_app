@@ -105,8 +105,19 @@ public class DashboardController {
         testSeries.getData().add(new XYChart.Data<>("12:00", 25));
         testSeries.getData().add(new XYChart.Data<>("18:00", 22));
         
+        // IMPROVED: Add test series with immediate visual refresh
         temperatureChart.getData().add(testSeries);
         System.out.println("Test data added to chart");
+        
+        // Force immediate layout for test data
+        temperatureChart.requestLayout();
+        temperatureChart.applyCss();
+        temperatureChart.layout();
+        
+        // Apply aggressive refresh for test data
+        Platform.runLater(() -> {
+            forceChartRefresh();
+        });
     }
 
     public void setUser(User user) {
@@ -245,11 +256,39 @@ public class DashboardController {
     }
     
     private void forceChartRefresh() {
-        // Completely recreate the chart axes to force refresh
-        timeAxis.setTickLabelRotation(0);
-        valueAxis.setTickLabelRotation(0);
-        temperatureChart.setAnimated(false);
-        temperatureChart.setAnimated(true);
+        System.out.println("=== FORCING AGGRESSIVE CHART REFRESH ===");
+        
+        // Method 1: Visibility manipulation to force complete redraw
+        temperatureChart.setVisible(false);
+        temperatureChart.setManaged(false);
+        
+        Platform.runLater(() -> {
+            temperatureChart.setVisible(true);
+            temperatureChart.setManaged(true);
+            
+            // Method 2: Multiple layout cycles
+            temperatureChart.requestLayout();
+            temperatureChart.applyCss();
+            temperatureChart.layout();
+            
+            // Method 3: Axis manipulation to force refresh
+            timeAxis.setAutoRanging(false);
+            timeAxis.setAutoRanging(true);
+            valueAxis.setAutoRanging(false);
+            valueAxis.setAutoRanging(true);
+            
+            // Method 4: Animation toggle to trigger refresh
+            temperatureChart.setAnimated(true);
+            temperatureChart.setAnimated(false);
+            temperatureChart.setAnimated(true);
+            
+            Platform.runLater(() -> {
+                // Final forced refresh
+                temperatureChart.requestLayout();
+                temperatureChart.layout();
+                System.out.println("=== AGGRESSIVE CHART REFRESH COMPLETED ===");
+            });
+        });
     }
     
     private void updateChartData(LocationRow sel) {
@@ -312,12 +351,15 @@ public class DashboardController {
                 series.getData().add(new XYChart.Data<>(timeLabel, weather.getTemperature()));
             }
             
+            // IMPROVED: Add series with immediate visual refresh
             temperatureChart.getData().add(series);
             System.out.println("Added " + series.getData().size() + " data points to chart");
             System.out.println("Chart data size after adding: " + temperatureChart.getData().size());
             
-            // Force chart to refresh and redraw with multiple approaches
+            // Immediate layout refresh
             temperatureChart.setAnimated(false);
+            temperatureChart.requestLayout();
+            temperatureChart.applyCss();
             temperatureChart.layout();
             
             // Force a complete scene refresh
@@ -371,11 +413,14 @@ public class DashboardController {
             series.getData().add(new XYChart.Data<>(fmt.format(t), value));
         }
 
+        // IMPROVED: Add demo series with immediate visual refresh
         temperatureChart.getData().add(series);
         System.out.println("Added " + series.getData().size() + " demo data points to chart");
         
-        // Force chart to refresh and redraw with multiple approaches
+        // Immediate layout refresh for demo data
         temperatureChart.setAnimated(false);
+        temperatureChart.requestLayout();
+        temperatureChart.applyCss();
         temperatureChart.layout();
         
         // Force a complete scene refresh
