@@ -25,46 +25,16 @@ public class WeatherService {
         this.client = new OkHttpClient();
         this.objectMapper = new ObjectMapper();
         
-        // Load configuration from properties file
-        Properties props = new Properties();
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("application.properties")) {
-            if (input != null) {
-                props.load(input);
-            }
-        } catch (IOException e) {
-            System.err.println("Failed to load application.properties: " + e.getMessage());
-        }
-        
-        // Try to get API key from environment variable first, then fallback to properties file
-        this.apiKey = getApiKeyFromEnvironment(props);
-        this.baseUrl = props.getProperty("weather.api.base.url", "https://api.openweathermap.org/data/2.5");
-        this.geocodingUrl = props.getProperty("weather.api.geocoding.url", "https://api.openweathermap.org/geo/1.0/direct");
+        // Use ConfigManager for configuration
+        ConfigManager config = ConfigManager.getInstance();
+        this.apiKey = config.getApiKey();
+        this.baseUrl = config.getWeatherApiBaseUrl();
+        this.geocodingUrl = config.getWeatherApiGeocodingUrl();
         
         // Validate API key configuration
         validateApiKey();
     }
     
-    private String getApiKeyFromEnvironment(Properties props) {
-        // First try environment variable
-        String envApiKey = System.getenv("OPENWEATHER_API_KEY");
-        if (envApiKey != null && !envApiKey.trim().isEmpty()) {
-            System.out.println("✅ Using API key from environment variable OPENWEATHER_API_KEY");
-            return envApiKey.trim();
-        }
-        
-        // Fallback to properties file
-        String propApiKey = props.getProperty("weather.api.key");
-        if (propApiKey != null && !propApiKey.trim().isEmpty() && 
-            !"YOUR_OPENWEATHER_API_KEY".equals(propApiKey) && 
-            !"YOUR_ACTUAL_API_KEY_HERE".equals(propApiKey)) {
-            System.out.println("⚠️  Using API key from application.properties (consider using environment variable for better security)");
-            return propApiKey.trim();
-        }
-        
-        // No valid API key found
-        System.out.println("❌ No valid API key found in environment variable OPENWEATHER_API_KEY or application.properties");
-        return "NO_API_KEY";
-    }
     
     private void validateApiKey() {
         if ("NO_API_KEY".equals(this.apiKey) || 

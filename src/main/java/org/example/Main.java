@@ -12,6 +12,8 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
+        // Print configuration status on startup
+        ConfigManager.getInstance().printConfigStatus();
         launch();
     }
 }

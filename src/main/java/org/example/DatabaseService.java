@@ -15,6 +15,12 @@ public class DatabaseService {
     
     private DatabaseService() {
         Configuration config = new Configuration().configure();
+        
+        // Use environment variables for database credentials
+        ConfigManager configManager = ConfigManager.getInstance();
+        config.setProperty("hibernate.connection.username", configManager.getDbUsername());
+        config.setProperty("hibernate.connection.password", configManager.getDbPassword());
+        
         config.addAnnotatedClass(User.class);
         config.addAnnotatedClass(UserPreference.class);
         config.addAnnotatedClass(SavedLocation.class);
