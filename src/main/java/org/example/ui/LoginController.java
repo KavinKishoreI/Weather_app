@@ -16,16 +16,39 @@ public class LoginController {
     @FXML private Button loginButton;
     @FXML private Button registerButton;
     
-    private final DatabaseService databaseService = DatabaseService.getInstance();
+    private DatabaseService databaseService;
 
     @FXML
     private void initialize() {
         statusLabel.setText("");
+        
+        // Check if database is properly configured
+        if (!DatabaseService.isDatabaseConfigured()) {
+            String errorMsg = DatabaseService.getDatabaseConfigurationError();
+            statusLabel.setText("Database configuration error: " + errorMsg);
+            statusLabel.setStyle("-fx-text-fill: red;");
+            loginButton.setDisable(true);
+            registerButton.setDisable(true);
+        } else {
+            try {
+                databaseService = DatabaseService.getInstance();
+            } catch (Exception e) {
+                statusLabel.setText("Failed to initialize database: " + e.getMessage());
+                statusLabel.setStyle("-fx-text-fill: red;");
+                loginButton.setDisable(true);
+                registerButton.setDisable(true);
+            }
+        }
     }
 
     @FXML
     private void onLogin() {
         if (!validate()) return;
+        
+        if (databaseService == null) {
+            statusLabel.setText("Database not available. Please check configuration.");
+            return;
+        }
         
         String email = emailField.getText().trim();
         String password = passwordField.getText().trim();
@@ -45,6 +68,11 @@ public class LoginController {
     @FXML
     private void onRegister() {
         if (!validate()) return;
+        
+        if (databaseService == null) {
+            statusLabel.setText("Database not available. Please check configuration.");
+            return;
+        }
         
         String email = emailField.getText().trim();
         String password = passwordField.getText().trim();

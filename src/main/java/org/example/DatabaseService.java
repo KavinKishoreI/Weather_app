@@ -12,19 +12,30 @@ import java.util.Optional;
 public class DatabaseService {
     private static DatabaseService instance;
     private final SessionFactory sessionFactory;
+    private final ConfigManager configManager;
     
     private DatabaseService() {
-        Configuration config = new Configuration().configure();
-        
-        // Use environment variables for database credentials
-        ConfigManager configManager = ConfigManager.getInstance();
-        config.setProperty("hibernate.connection.username", configManager.getDbUsername());
-        config.setProperty("hibernate.connection.password", configManager.getDbPassword());
-        
-        config.addAnnotatedClass(User.class);
-        config.addAnnotatedClass(UserPreference.class);
-        config.addAnnotatedClass(SavedLocation.class);
-        this.sessionFactory = config.buildSessionFactory();
+        this.configManager = ConfigManager.getInstance();
+        this.sessionFactory = initializeSessionFactory();
+    }
+    
+    private SessionFactory initializeSessionFactory() {
+        try {
+            Configuration config = new Configuration().configure();
+            
+            // Use environment variables for database credentials
+            config.setProperty("hibernate.connection.username", configManager.getDbUsername());
+            config.setProperty("hibernate.connection.password", configManager.getDbPassword());
+            config.setProperty("hibernate.connection.url", configManager.getDbUrl());
+            
+            config.addAnnotatedClass(User.class);
+            config.addAnnotatedClass(UserPreference.class);
+            config.addAnnotatedClass(SavedLocation.class);
+            
+            return config.buildSessionFactory();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize database connection. Please check your environment variables: " + e.getMessage(), e);
+        }
     }
     
     public static synchronized DatabaseService getInstance() {
@@ -32,6 +43,36 @@ public class DatabaseService {
             instance = new DatabaseService();
         }
         return instance;
+    }
+    
+    /**
+     * Check if database configuration is valid (only checks required variables)
+     */
+    public static boolean isDatabaseConfigured() {
+        try {
+            ConfigManager configManager = ConfigManager.getInstance();
+            configManager.getDbUsername();
+            configManager.getDbPassword();
+            // DB_URL is optional now, so we don't need to check it
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    /**
+     * Get database configuration error message (only checks required variables)
+     */
+    public static String getDatabaseConfigurationError() {
+        try {
+            ConfigManager configManager = ConfigManager.getInstance();
+            configManager.getDbUsername();
+            configManager.getDbPassword();
+            // DB_URL is optional now, so we don't need to check it
+            return null; // No error
+        } catch (Exception e) {
+            return e.getMessage();
+        }
     }
     
     public User authenticateUser(String email, String password) {

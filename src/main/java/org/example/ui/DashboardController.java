@@ -51,13 +51,16 @@ public class DashboardController {
 
     private final ObservableList<LocationRow> locations = FXCollections.observableArrayList();
     private final Random random = new Random();
-    private final DatabaseService databaseService = DatabaseService.getInstance();
-    private final WeatherService weatherService = new WeatherService();
-    private final FreeWeatherService freeWeatherService = new FreeWeatherService();
+    private DatabaseService databaseService;
+    private WeatherService weatherService;
+    private FreeWeatherService freeWeatherService;
     private User currentUser;
 
     @FXML
     private void initialize() {
+        // Initialize services safely
+        initializeServices();
+        
         // Table setup
         colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
         colLat.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().getLatitude()));
@@ -96,6 +99,37 @@ public class DashboardController {
         testChart();
     }
     
+    private void initializeServices() {
+        // Initialize DatabaseService
+        try {
+            if (DatabaseService.isDatabaseConfigured()) {
+                databaseService = DatabaseService.getInstance();
+                System.out.println("✅ Database service initialized successfully");
+            } else {
+                System.out.println("⚠️ Database not configured: " + DatabaseService.getDatabaseConfigurationError());
+            }
+        } catch (Exception e) {
+            System.out.println("❌ Failed to initialize database service: " + e.getMessage());
+        }
+        
+        // Initialize WeatherService
+        try {
+            weatherService = new WeatherService();
+            System.out.println("✅ Weather service initialized successfully");
+        } catch (Exception e) {
+            System.out.println("❌ Failed to initialize weather service: " + e.getMessage());
+            System.out.println("⚠️ Weather features will be limited");
+        }
+        
+        // Initialize FreeWeatherService (fallback)
+        try {
+            freeWeatherService = new FreeWeatherService();
+            System.out.println("✅ Free weather service initialized successfully");
+        } catch (Exception e) {
+            System.out.println("❌ Failed to initialize free weather service: " + e.getMessage());
+        }
+    }
+    
     private void testChart() {
         System.out.println("=== TESTING CHART ===");
         XYChart.Series<String, Number> testSeries = new XYChart.Series<>();
@@ -128,6 +162,11 @@ public class DashboardController {
     
     private void loadUserData() {
         if (currentUser == null) return;
+        
+        if (databaseService == null) {
+            System.out.println("⚠️ Database service not available - user data not loaded");
+            return;
+        }
         
         try {
             // Load user's saved locations
@@ -189,8 +228,10 @@ public class DashboardController {
             double lon = Double.parseDouble(lonText);
             
             // Save to database
-            if (currentUser != null) {
+            if (currentUser != null && databaseService != null) {
                 databaseService.saveLocation(currentUser.getId(), name, lat, lon);
+            } else if (currentUser != null && databaseService == null) {
+                System.out.println("⚠️ Database service not available - location not saved to database");
             }
             
             // Add to UI
@@ -213,7 +254,7 @@ public class DashboardController {
         if (sel != null) {
             try {
                 // Find and remove from database
-                if (currentUser != null) {
+                if (currentUser != null && databaseService != null) {
                     List<SavedLocation> savedLocations = databaseService.getUserLocations(currentUser.getId());
                     for (SavedLocation location : savedLocations) {
                         if (location.getLocationName().equals(sel.getName()) &&
@@ -223,6 +264,8 @@ public class DashboardController {
                             break;
                         }
                     }
+                } else if (currentUser != null && databaseService == null) {
+                    System.out.println("⚠️ Database service not available - location not removed from database");
                 }
                 
                 // Remove from UI
@@ -308,37 +351,68 @@ public class DashboardController {
             List<WeatherService.WeatherData> forecast = null;
             String dataSource = "OpenWeatherMap";
             
-            try {
-                // Try the main weather service first
-                forecast = weatherService.getHourlyForecast(sel.getLatitude(), sel.getLongitude(), units);
-            } catch (IOException e) {
-                if (e.getMessage().contains("401")) {
-                    // API key issue, try free service
-                    try {
-                        List<FreeWeatherService.WeatherData> freeForecast = freeWeatherService.getHourlyForecast(
-                            sel.getLatitude(), sel.getLongitude(), units);
-                        
-                        // Convert to main WeatherData format
-                        forecast = new ArrayList<>();
-                        for (FreeWeatherService.WeatherData freeData : freeForecast) {
-                            forecast.add(new WeatherService.WeatherData(
-                                freeData.getTemperature(),
-                                freeData.getFeelsLike(),
-                                freeData.getHumidity(),
-                                freeData.getWindSpeed(),
-                                freeData.getDescription(),
-                                freeData.getIcon(),
-                                freeData.getDateTime(),
-                                freeData.getUnits()
-                            ));
+            if (weatherService != null) {
+                try {
+                    // Try the main weather service first
+                    forecast = weatherService.getHourlyForecast(sel.getLatitude(), sel.getLongitude(), units);
+                } catch (IOException e) {
+                    if (e.getMessage().contains("401")) {
+                        // API key issue, try free service
+                        if (freeWeatherService != null) {
+                            try {
+                                List<FreeWeatherService.WeatherData> freeForecast = freeWeatherService.getHourlyForecast(
+                                    sel.getLatitude(), sel.getLongitude(), units);
+                                
+                                // Convert to main WeatherData format
+                                forecast = new ArrayList<>();
+                                for (FreeWeatherService.WeatherData freeData : freeForecast) {
+                                    forecast.add(new WeatherService.WeatherData(
+                                        freeData.getTemperature(),
+                                        freeData.getFeelsLike(),
+                                        freeData.getHumidity(),
+                                        freeData.getWindSpeed(),
+                                        freeData.getDescription(),
+                                        freeData.getIcon(),
+                                        freeData.getDateTime(),
+                                        freeData.getUnits()
+                                    ));
+                                }
+                                dataSource = "Free Weather Service";
+                            } catch (IOException freeE) {
+                                throw e; // Re-throw original error
+                            }
+                        } else {
+                            throw new IOException("No weather services available");
                         }
-                        dataSource = "Free Weather Service";
-                    } catch (IOException freeE) {
-                        throw e; // Re-throw original error
+                    } else {
+                        throw e; // Re-throw if not API key issue
                     }
-                } else {
-                    throw e; // Re-throw if not API key issue
                 }
+            } else if (freeWeatherService != null) {
+                try {
+                    List<FreeWeatherService.WeatherData> freeForecast = freeWeatherService.getHourlyForecast(
+                        sel.getLatitude(), sel.getLongitude(), units);
+                    
+                    // Convert to main WeatherData format
+                    forecast = new ArrayList<>();
+                    for (FreeWeatherService.WeatherData freeData : freeForecast) {
+                        forecast.add(new WeatherService.WeatherData(
+                            freeData.getTemperature(),
+                            freeData.getFeelsLike(),
+                            freeData.getHumidity(),
+                            freeData.getWindSpeed(),
+                            freeData.getDescription(),
+                            freeData.getIcon(),
+                            freeData.getDateTime(),
+                            freeData.getUnits()
+                        ));
+                    }
+                    dataSource = "Free Weather Service";
+                } catch (IOException e) {
+                    throw new IOException("Free weather service failed: " + e.getMessage());
+                }
+            } else {
+                throw new IOException("No weather services available");
             }
             
             XYChart.Series<String, Number> series = new XYChart.Series<>();
@@ -371,8 +445,10 @@ public class DashboardController {
             });
             
             // Save user preference
-            if (currentUser != null) {
+            if (currentUser != null && databaseService != null) {
                 databaseService.saveUserPreference(currentUser.getId(), "units", units);
+            } else if (currentUser != null && databaseService == null) {
+                System.out.println("⚠️ Database service not available - units preference not saved");
             }
             
         } catch (IOException e) {
