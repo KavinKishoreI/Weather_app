@@ -27,16 +27,18 @@ if ($apiKey) {
 }
 
 # Database Username
-$dbUsername = Read-Host "Enter your Database Username (or press Enter for 'system')"
+$dbUsername = Read-Host "Enter your Database Username"
 if (-not $dbUsername) {
-    $dbUsername = "system"
+    Write-Host "❌ Database username is required!" -ForegroundColor Red
+    exit 1
 }
 Set-EnvVar "DB_USERNAME" $dbUsername "Database Username set"
 
 # Database Password
-$dbPassword = Read-Host "Enter your Database Password (or press Enter for 'kavinkishore')"
+$dbPassword = Read-Host "Enter your Database Password"
 if (-not $dbPassword) {
-    $dbPassword = "kavinkishore"
+    Write-Host "❌ Database password is required!" -ForegroundColor Red
+    exit 1
 }
 Set-EnvVar "DB_PASSWORD" $dbPassword "Database Password set"
 
@@ -44,7 +46,7 @@ Write-Host "`n🎉 Environment Variables Setup Complete!" -ForegroundColor Green
 Write-Host "=========================================" -ForegroundColor Green
 Write-Host "✅ OPENWEATHER_API_KEY: $apiKey" -ForegroundColor Green
 Write-Host "✅ DB_USERNAME: $dbUsername" -ForegroundColor Green
-Write-Host "✅ DB_PASSWORD: $dbPassword" -ForegroundColor Green
+Write-Host "✅ DB_PASSWORD: [HIDDEN]" -ForegroundColor Green
 
 Write-Host "`n📝 Note: You may need to restart your IDE/terminal for changes to take effect." -ForegroundColor Yellow
 Write-Host "🚀 You can now run your Weather App!" -ForegroundColor Cyan

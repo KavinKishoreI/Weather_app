@@ -1,37 +1,33 @@
-# Environment Variables Setup Guide
+# 🌤️ Weather App Environment Variables Setup Guide
 
-## 🔧 Environment Variable Persistence
+This guide helps you set up the required environment variables for the Weather App.
 
-### **Temporary (Session-Only)**
-```powershell
-# These only last for the current PowerShell session
-$env:OPENWEATHER_API_KEY="your_api_key"
-$env:DB_USERNAME="your_username"
-$env:DB_PASSWORD="your_password"
-```
+## 🔑 Required Environment Variables
 
-### **Permanent (All Sessions) - RECOMMENDED**
-```powershell
-# These persist across all sessions and reboots
-[Environment]::SetEnvironmentVariable("OPENWEATHER_API_KEY", "your_api_key", "User")
-[Environment]::SetEnvironmentVariable("DB_USERNAME", "your_username", "User")
-[Environment]::SetEnvironmentVariable("DB_PASSWORD", "your_password", "User")
-```
+- `OPENWEATHER_API_KEY` - Your OpenWeatherMap API key
+- `DB_USERNAME` - Your database username  
+- `DB_PASSWORD` - Your database password
 
 ## 🚀 Quick Setup Options
 
-### **Option 1: Use the Setup Script (Easiest)**
+### **Option 1: Use Setup Scripts (Recommended)**
+
+**Windows PowerShell:**
 ```powershell
-# Run the PowerShell setup script
 .\setup-env-vars.ps1
+```
+
+**Windows Command Prompt:**
+```cmd
+setup-env-vars.bat
 ```
 
 ### **Option 2: Manual PowerShell Setup**
 ```powershell
 # Set all three environment variables permanently
-[Environment]::SetEnvironmentVariable("OPENWEATHER_API_KEY", "6b990d70706ea1c5c1f48a8619836a65", "User")
-[Environment]::SetEnvironmentVariable("DB_USERNAME", "system", "User")
-[Environment]::SetEnvironmentVariable("DB_PASSWORD", "kavinkishore", "User")
+[Environment]::SetEnvironmentVariable("OPENWEATHER_API_KEY", "YOUR_API_KEY_HERE", "User")
+[Environment]::SetEnvironmentVariable("DB_USERNAME", "YOUR_USERNAME_HERE", "User")
+[Environment]::SetEnvironmentVariable("DB_PASSWORD", "YOUR_PASSWORD_HERE", "User")
 
 # Verify they're set
 echo "API Key: $env:OPENWEATHER_API_KEY"
@@ -42,69 +38,70 @@ echo "DB Password: $env:DB_PASSWORD"
 ### **Option 3: Command Prompt Setup**
 ```cmd
 # Set environment variables using setx command
-setx OPENWEATHER_API_KEY "6b990d70706ea1c5c1f48a8619836a65"
-setx DB_USERNAME "system"
-setx DB_PASSWORD "kavinkishore"
+setx OPENWEATHER_API_KEY "YOUR_API_KEY_HERE"
+setx DB_USERNAME "YOUR_USERNAME_HERE"
+setx DB_PASSWORD "YOUR_PASSWORD_HERE"
 ```
 
-## 🔍 Verification
+### **Option 4: Linux/macOS Setup**
+```bash
+# Add to your shell profile (~/.bashrc, ~/.zshrc, etc.)
+export OPENWEATHER_API_KEY="YOUR_API_KEY_HERE"
+export DB_USERNAME="YOUR_USERNAME_HERE"
+export DB_PASSWORD="YOUR_PASSWORD_HERE"
+```
 
-### **Check if Environment Variables are Set:**
+## 🔍 Verify Your Setup
+
+Run the test script to verify your environment variables:
 ```powershell
-# Check all three variables
-echo "OPENWEATHER_API_KEY: $env:OPENWEATHER_API_KEY"
-echo "DB_USERNAME: $env:DB_USERNAME"
-echo "DB_PASSWORD: $env:DB_PASSWORD"
+.\test-env-vars.ps1
 ```
 
-### **Test Your App:**
-1. Set the environment variables using any method above
-2. **Restart your IDE/terminal** (important!)
-3. Run your JavaFX application
-4. Check the console output for configuration status
+## 🛠️ Get Your API Key
 
-## 📝 Important Notes
+1. Visit [OpenWeatherMap API](https://openweathermap.org/api)
+2. Sign up for a free account
+3. Go to [API Keys dashboard](https://home.openweathermap.org/api_keys)
+4. Copy your API key
 
-### **Persistence Levels:**
-- **User Level**: Available to your user account across all sessions
-- **System Level**: Available to all users (requires admin rights)
-- **Session Level**: Only available in current session
+## 🗄️ Database Setup
 
-### **When Environment Variables Take Effect:**
-- **New processes**: Immediately (new terminal windows, IDE restarts)
-- **Existing processes**: Need to restart the application
-- **IDE**: Usually need to restart the IDE
+Make sure your Oracle database is running and accessible:
+- Default connection: `jdbc:oracle:thin:@localhost:1521:xe`
+- Ensure your database user has proper permissions
 
-### **Fallback Behavior:**
-If environment variables aren't set, the app will:
-1. Try environment variables first
-2. Fall back to `application.properties` file
-3. Use default values as last resort
+## 🚨 Security Notes
 
-## 🛠️ Troubleshooting
+- **Never commit real credentials to version control**
+- **Use environment variables for all sensitive data**
+- **Keep your API keys secure and don't share them**
 
-### **Environment Variables Not Working:**
-1. **Restart your IDE/terminal** after setting variables
-2. **Check if variables are set**: `echo $env:VARIABLE_NAME`
-3. **Verify in new terminal window** (not the one where you set them)
-4. **Check application.properties** as fallback
+## 🆘 Troubleshooting
 
-### **App Still Using Properties File:**
-This is normal! The app will show:
-```
-⚠️ Using API key from application.properties (consider using environment variable for better security)
-```
+### **Environment Variables Not Working?**
+1. Restart your IDE/terminal after setting variables
+2. Check if variables are set: `echo $env:VARIABLE_NAME`
+3. Verify spelling of variable names
 
-This means environment variables aren't set, so it's using the properties file (which is fine).
+### **Database Connection Issues?**
+1. Check if Oracle database is running
+2. Verify connection string in `hibernate.cfg.xml`
+3. Test database credentials
 
-## 🎯 Best Practice
+### **API Key Issues?**
+1. Verify your OpenWeatherMap API key is valid
+2. Check if you've exceeded API rate limits
+3. Ensure the key has proper permissions
 
-**For Development:**
-- Use the setup script once
-- Environment variables will persist across all sessions
-- No need to set them again
+## 📞 Support
 
-**For Production:**
-- Set environment variables on the server
-- Never put sensitive data in properties files
-- Use environment variables for all secrets
+If you encounter issues:
+1. Check the console output for error messages
+2. Verify all environment variables are set correctly
+3. Ensure your database is accessible
+4. Check your internet connection for API calls
+
+---
+
+**✅ You're all set! Your Weather App should now work with proper environment variables.**

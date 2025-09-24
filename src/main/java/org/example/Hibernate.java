@@ -10,7 +10,7 @@ public class Hibernate{
         Session session = factory.openSession();
 
         session.beginTransaction();
-        session.persist(new User("kavin@example.com", "password123", "Kavin"));
+        session.persist(new User("demo@example.com", "demo123", "Demo User"));
         session.getTransaction().commit();
 
         session.close();

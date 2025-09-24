@@ -26,7 +26,7 @@ public class DatabaseInitializer {
                 session.beginTransaction();
                 
                 // Create a test user
-                User testUser = new User("test@example.com", "password123", "Test User");
+                User testUser = new User("demo@example.com", "demo123", "Demo User");
                 session.persist(testUser);
                 
                 // Add some test preferences
@@ -42,7 +42,7 @@ public class DatabaseInitializer {
                 session.getTransaction().commit();
                 
                 System.out.println("✅ Database initialized successfully!");
-                System.out.println("📊 Created test user: test@example.com / password123");
+                System.out.println("📊 Created test user: demo@example.com / demo123");
                 System.out.println("📍 Added sample locations: London, New York");
                 
             } catch (Exception e) {
